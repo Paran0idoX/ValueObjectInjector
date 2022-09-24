@@ -1,4 +1,6 @@
-import annotation.InjectInfo;
+package com.para.valueobjectinjector;
+
+import com.para.valueobjectinjector.annotation.InjectInfo;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import lombok.Data;

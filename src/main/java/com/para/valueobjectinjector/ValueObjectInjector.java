@@ -1,3 +1,5 @@
+package com.para.valueobjectinjector;
+
 import java.lang.reflect.Constructor;
 
 public interface ValueObjectInjector<T extends Model> {

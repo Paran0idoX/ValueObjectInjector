@@ -1,9 +1,10 @@
-import annotation.InjectValue;
+package com.para.valueobjectinjector;
+
+import com.para.valueobjectinjector.annotation.InjectValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import annotation.InjectIgnore;
-import annotation.InjectInfo;
-import annotation.InjectValue;
+import com.para.valueobjectinjector.annotation.InjectIgnore;
+import com.para.valueobjectinjector.annotation.InjectInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
