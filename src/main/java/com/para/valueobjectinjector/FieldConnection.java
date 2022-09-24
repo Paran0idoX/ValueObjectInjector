@@ -3,8 +3,10 @@ package com.para.valueobjectinjector;
 import com.para.valueobjectinjector.annotation.InjectInfo;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.para.valueobjectinjector.annotation.InjectValue;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -40,6 +42,8 @@ public class FieldConnection<I extends ValueObjectInjector<M>, M extends Model> 
                 }
                 biMapInverseLock.lock();
                 for (Map.Entry<Field, Field> entry : modelToInjectorFieldMap.entrySet()) {
+                    entry.getValue().setAccessible(true);
+                    entry.getKey().setAccessible(true);
                     entry.getValue().set(injector, entry.getKey().get(modelFieldValue));
                 }
             } catch (IllegalAccessException e) {
@@ -63,13 +67,13 @@ public class FieldConnection<I extends ValueObjectInjector<M>, M extends Model> 
                 modelToInjectorFieldMap.inverse();
                 if (modelField.isEnumConstant()){
                     try {
-                        Enum enumValue = ValueObjectInjectorUtil.getEnumObjectByValue((Class<? extends Enum>) modelField.getDeclaringClass(), injectFieldList.get(0).get(injector));
+                        Enum enumValue = ValueObjectInjectorUtil.getEnumObjectByValue((Class<? extends Enum>) modelField.getType(), injectFieldList.get(0).get(injector));
                         modelField.set(model, enumValue);
                     } catch (NoSuchFieldException | IllegalAccessException e) {
                         e.printStackTrace();
                     }
                 } else {
-                    Constructor<?> constructor = modelField.getDeclaringClass().getConstructor();
+                    Constructor<?> constructor = modelField.getType().getConstructor();
                     constructor.setAccessible(true);
                     try {
                         Object valueObject = constructor.newInstance();
@@ -83,7 +87,7 @@ public class FieldConnection<I extends ValueObjectInjector<M>, M extends Model> 
                     }
                 }
             } catch (NoSuchMethodException e) {
-                log.error("Class {} has no NoArgsConstructor", modelField.getDeclaringClass(), e);
+                log.error("Class {} has no NoArgsConstructor", modelField.getType(), e);
             } finally {
                 modelToInjectorFieldMap.inverse();
                 biMapInverseLock.unlock();
@@ -101,7 +105,8 @@ public class FieldConnection<I extends ValueObjectInjector<M>, M extends Model> 
             modelToInjectorFieldMap = HashBiMap.create(injectFieldList.size());
             biMapInverseLock = new ReentrantLock();
             for (Field field : injectFieldList) {
-                Field valueObjectField = ValueObjectInjectorUtil.getInjectValueProviderById(modelField.getDeclaringClass(), field.getAnnotation(InjectInfo.class).injectValueId());
+                Field valueObjectField = ValueObjectInjectorUtil.getInjectValueProviderById(modelField.getType(),
+                        AnnotatedElementUtils.isAnnotated(field, InjectInfo.class) ? field.getAnnotation(InjectInfo.class).injectValueId() : InjectValue.DEFAULT_VALUE_ID);
                 modelToInjectorFieldMap.put(valueObjectField, field);
             }
         }
